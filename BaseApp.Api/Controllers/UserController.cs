@@ -3,6 +3,7 @@ using BaseApp.Core.Services.CommonServices;
 using BaseApp.Data.DbModels;
 using BaseApp.Data.Models;
 using BaseApp.Data.Repositories;
+using BaseApp.Data.Requests;
 using BaseApp.Data.Responses;
 using BaseApp.InjectionServices;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +39,7 @@ namespace BaseApp.Controllers
         }
 
         [HttpPut]
-        public IActionResult UpdateUser([FromForm] UserDbModel user)
+        public IActionResult UpdateUser([FromForm] UserRequest request)
         {
             var userId = JwtService.GetClaimUserId(User);
             var dbModel = _userRepository.GetById(userId);
@@ -54,12 +55,13 @@ namespace BaseApp.Controllers
                 AuthenticationDb = dbModel.AuthenticationDb,
                 UserDb = dbModel.UserDb
             };
-            _userRepository.Update(authUserAudit);
+            var updatedDbModel = request.ConverToDbModel(authUserAudit);
+            _userRepository.Update(updatedDbModel);
             return StatusCode(200, new UserResponse(authUserAudit));
         }
 
         [HttpDelete]
-        public IActionResult DeleteUser([FromForm] UserDbModel user)
+        public IActionResult DeleteUser()
         {
             var userId = JwtService.GetClaimUserId(User);
             var dbModel = _userRepository.GetById(userId);

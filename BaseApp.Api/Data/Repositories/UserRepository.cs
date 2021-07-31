@@ -66,9 +66,8 @@ namespace BaseApp.Data.Repositories
 
         public void Update(AuthenticationUserAuditModel authUserAudit)
         {
-            _context.Users.Update(authUserAudit.UserDb);
-            _context.Audit.Update(authUserAudit.AuditDb);
-            _context.Authentication.Update(authUserAudit.AuthenticationDb);
+            authUserAudit.UserDb.AuthenticationDbModel = authUserAudit.AuthenticationDb;
+            authUserAudit.UserDb.AuditDbModel = authUserAudit.AuditDb;
             _context.SaveChanges();
         }
 
@@ -76,6 +75,7 @@ namespace BaseApp.Data.Repositories
         {
             _context.Audit.Remove(authUserAudit.AuditDb);
             _context.Authentication.Remove(authUserAudit.AuthenticationDb);
+            _context.SaveChanges();
         }
     }
 }

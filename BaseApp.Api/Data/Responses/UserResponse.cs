@@ -15,7 +15,7 @@ namespace BaseApp.Data.Responses
             City =authUserAudit.UserDb.City;
             State =authUserAudit.UserDb.State;
             PostalCode =authUserAudit.UserDb.PostalCode;
-            AuditDbFields = authUserAudit.AuditDb;
+            AuditDbFields = new AuditResponse(authUserAudit.AuditDb);
         }
         
         public string Id { get; }
@@ -26,6 +26,6 @@ namespace BaseApp.Data.Responses
         public string City { get; }
         public string State { get; }
         public string PostalCode { get; }
-        public AuditDbModel AuditDbFields { get; }
+        public AuditResponse AuditDbFields { get; }
     }
 }
