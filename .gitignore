@@ -1,0 +1,9 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.idea
+BaseApp.Api/appsettings.Development.json
+.idea/.idea.Libraries/*
+BaseApp.Data/DataAccess/DbConnectionString.cs
