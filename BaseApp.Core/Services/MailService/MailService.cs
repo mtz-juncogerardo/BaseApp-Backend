@@ -14,7 +14,7 @@ namespace BaseApp.Core.Services.MailService
 
         protected MailService(MailArgs args)
         {
-            _receiverEmail = args.ReciverEmail;
+            _receiverEmail = args.ReceiverEmail;
             _sendGridApiKey = args.SendGridApiKey;
             _subject = args.Subject;
         }

@@ -60,7 +60,7 @@ namespace BaseApp
                     };
                 });
             services.AddDbContext<AuthenticationContext>(options => options.UseNpgsql(Configuration.DbConnectionString,
-                r => r.MigrationsAssembly("Authentication.Data")));
+                r => r.MigrationsAssembly("BaseApp.Data")));
             services.AddControllers();
             services.AddMvc()
                 .AddNewtonsoftJson(

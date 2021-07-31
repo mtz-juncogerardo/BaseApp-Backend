@@ -74,7 +74,7 @@ namespace BaseApp.Controllers
             {
                 Subject = "Gracias por Registrarte!",
                 Link = $"{_configuration.ClientUrl}validate?token={token}",
-                ReciverEmail = request.Email,
+                ReceiverEmail = request.Email,
                 SendGridApiKey = _configuration.SendGridApiKey
             };
             await MailFactory.SendMailTemplate(MailTemplateEnum.ConfirmEmail, mailArgs);
@@ -114,7 +114,7 @@ namespace BaseApp.Controllers
             {
                 Subject = "Solicitaste un cambio de contraseña",
                 Link = $"{_configuration.ClientUrl}recovery?token={token}",
-                ReciverEmail = request.Email,
+                ReceiverEmail = request.Email,
                 SendGridApiKey = _configuration.SendGridApiKey
             };
             await MailFactory.SendMailTemplate(MailTemplateEnum.PasswordRecovery, mailArgs);
@@ -156,7 +156,7 @@ namespace BaseApp.Controllers
             {
                 Subject = "Confirma tu nuevo correo",
                 Link = $"{_configuration.ClientUrl}email?token={token}",
-                ReciverEmail = request.Email,
+                ReceiverEmail = request.Email,
                 SendGridApiKey = _configuration.SendGridApiKey
             };
             await MailFactory.SendMailTemplate(MailTemplateEnum.EmailChange, mailArgs);
