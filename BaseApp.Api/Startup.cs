@@ -1,4 +1,5 @@
 using System.Text;
+using AspNetCoreRateLimit;
 using BaseApp.Data.DataAccess;
 using BaseApp.Data.Repositories;
 using BaseApp.InjectionServices;
@@ -17,29 +18,48 @@ namespace BaseApp
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+        
         private ConfigurationService Configuration { get; }
 
         public Startup(IConfiguration configuration)
         {
             Configuration = new ConfigurationService(configuration);
+            _configuration = configuration;
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            //Dependency Injection
-            services.AddSingleton(Configuration);
-            services.AddSingleton<IConfigurationService>(Configuration);
-            services.AddScoped<IAuditService, AuditFieldsService>();
-            services.AddScoped<IUserRepository, UserRepository>();
-
-            //AuthConfig
+            InjectServices(services);
+            AddAuthentication(services);
+            ConfigureIpRateLimit(services);
+            services.AddControllers();
+            services.AddOptions();
+            services.AddDbContext<AuthenticationContext>(options => options.UseNpgsql(Configuration.DbConnectionString,
+                r => r.MigrationsAssembly("BaseApp.Data")));
             services.AddCors(c =>
                 {
                     c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
                 });
-
+            services.AddMvc()
+                .AddNewtonsoftJson(
+                    options =>
+                        {
+                            options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                        });
+        }
+        
+        private void ConfigureIpRateLimit(IServiceCollection services)
+        {
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>(_configuration.GetSection("IpRateLimiting"));
+            services.Configure<IpRateLimitPolicies>(_configuration.GetSection("IpRateLimitPolicies"));
+            services.AddInMemoryRateLimiting();
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+        }
+        
+        private void AddAuthentication(IServiceCollection services)
+        {
             services.AddAuthentication(r =>
                 {
                     r.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,18 +80,16 @@ namespace BaseApp
                         RoleClaimType = "UserRole"
                     };
                 });
-            services.AddDbContext<AuthenticationContext>(options => options.UseNpgsql(Configuration.DbConnectionString,
-                r => r.MigrationsAssembly("BaseApp.Data")));
-            services.AddControllers();
-            services.AddMvc()
-                .AddNewtonsoftJson(
-                    options =>
-                        {
-                            options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                        });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        private void InjectServices(IServiceCollection services)
+        {
+            services.AddSingleton(Configuration);
+            services.AddSingleton<IConfigurationService>(Configuration);
+            services.AddScoped<IAuditService, AuditFieldsService>();
+            services.AddScoped<IUserRepository, UserRepository>();
+        }
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -86,6 +104,7 @@ namespace BaseApp
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseIpRateLimiting();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         }

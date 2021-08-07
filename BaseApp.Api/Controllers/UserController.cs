@@ -31,6 +31,7 @@ namespace BaseApp.Controllers
             _auditService = auditService;
             _userRepository = userRepository;
         }
+        
         [HttpGet("all")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetAllUsers()
