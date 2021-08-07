@@ -1,4 +1,4 @@
-﻿namespace BaseApp.Data
+﻿namespace BaseApp.Data.Roles
 {
     public enum UserRoleEnum
     {

@@ -8,6 +8,7 @@ using System.Text;
 using BaseApp.Core.Helpers;
 using BaseApp.Data;
 using BaseApp.Data.DbModels;
+using BaseApp.Data.Roles;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BaseApp.Core.Services.CommonServices
