@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using BaseApp.Core.Helpers;
+using BaseApp.Data;
 using BaseApp.Data.DbModels;
 using Microsoft.IdentityModel.Tokens;
 
@@ -30,7 +31,11 @@ namespace BaseApp.Core.Services.CommonServices
             return tokenString;
         }
 
-        public static string GenerateTokenWithUserId(string secret, DateTime expirationDate, string userId, string versionId)
+        public static string GenerateTokenWithUserId(string secret,
+            DateTime expirationDate,
+            string userId,
+            string versionId,
+            UserRoleEnum role = UserRoleEnum.User)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var loginCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha512);
@@ -40,7 +45,8 @@ namespace BaseApp.Core.Services.CommonServices
                 new List<Claim>
                 {
                     new("UserId", userId),
-                    new("VersionId", versionId)
+                    new("VersionId", versionId),
+                    new("UserRole", role.ToString())
                 },
                 expires: expirationDate,
                 signingCredentials: loginCredentials
@@ -72,7 +78,7 @@ namespace BaseApp.Core.Services.CommonServices
             }
         }
 
-        public static void ValidateVersion(AuthenticationDbModel auth, IPrincipal principal)
+        public static void ValidateJwtVersion(AuthenticationDbModel auth, IPrincipal principal)
         {
             var claimsIdentity = (ClaimsIdentity)principal.Identity!;
             var claimVersionId = claimsIdentity!.Claims.FirstOrDefault(r => r.Type == "VersionId");

@@ -1,4 +1,6 @@
-﻿using BaseApp.Core.Helpers;
+﻿using System.Collections.Generic;
+using System.Linq;
+using BaseApp.Core.Helpers;
 using BaseApp.Core.Services.CommonServices;
 using BaseApp.Data.DbModels;
 using BaseApp.Data.Models;
@@ -28,6 +30,18 @@ namespace BaseApp.Controllers
             _configuration = configuration;
             _auditService = auditService;
             _userRepository = userRepository;
+        }
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetAllUsers()
+        {
+            var userId = JwtService.GetClaimUserId(User);
+            var dbModel = _userRepository.GetById(userId);
+            JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
+
+            var dbUsers = _userRepository.All
+                .Select(r => new UserResponse(r));
+            return StatusCode(200, dbUsers);
         }
 
         [HttpGet]

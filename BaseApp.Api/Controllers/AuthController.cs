@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BaseApp.Core.Helpers;
 using BaseApp.Core.Services.CommonServices;
 using BaseApp.Core.Services.MailService;
+using BaseApp.Data;
 using BaseApp.Data.DbModels;
 using BaseApp.Data.Repositories;
 using BaseApp.Data.Requests;
@@ -94,7 +95,8 @@ namespace BaseApp.Controllers
             var token = JwtService.GenerateTokenWithUserId(_configuration.JwtSecret,
                 DateTime.Now.AddDays(14),
                 dbAuthUserAudit.UserDb.Id!,
-                dbAuthUserAudit.AuthenticationDb.VersionId!);
+                dbAuthUserAudit.AuthenticationDb.VersionId!,
+                dbAuthUserAudit.AuthenticationDb.Role);
             return StatusCode(200, new AuthenticationResponse(token));
         }
 
@@ -128,7 +130,7 @@ namespace BaseApp.Controllers
         {
             var userId = JwtService.GetClaimUserId(User);
             var dbModel = _userRepository.GetById(userId);
-            JwtService.ValidateVersion(dbModel.AuthenticationDb, User);
+            JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
             var ip = IpService.GetIpAddress(Request);
             dbModel.AuthenticationDb.Salt = PasswordService.GenerateSalt();
             dbModel.AuthenticationDb.Password = PasswordService.GetHashPassword(request.Password,
@@ -190,7 +192,7 @@ namespace BaseApp.Controllers
             var id = JwtService.GetClaimUserId(User);
             var dbModel = _userRepository.GetById(id);
             if (dbModel == null) return StatusCode(401, "El token expiró");
-            JwtService.ValidateVersion(dbModel.AuthenticationDb, User);
+            JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
             if (!dbModel.AuthenticationDb.EmailValid)
             {
                 var ip = IpService.GetIpAddress(Request);

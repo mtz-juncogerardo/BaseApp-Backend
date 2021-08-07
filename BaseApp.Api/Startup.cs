@@ -56,7 +56,8 @@ namespace BaseApp
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidIssuer = "https://mtzjunco.com",
-                        ValidAudience = "https://mtzjunco.com"
+                        ValidAudience = "https://mtzjunco.com",
+                        RoleClaimType = "UserRole"
                     };
                 });
             services.AddDbContext<AuthenticationContext>(options => options.UseNpgsql(Configuration.DbConnectionString,

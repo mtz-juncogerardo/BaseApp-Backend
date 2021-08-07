@@ -11,6 +11,7 @@ namespace BaseApp.Data.DbModels
         [DefaultValue(false)] public bool EmailValid { get; set; }
         [Required, MaxLength(36)] public string Id { get; set; }
         [Required, MaxLength(36)]public string VersionId { get; set; }
+        [DefaultValue(UserRoleEnum.User)] public UserRoleEnum Role { get; set; }
         public UserDbModel UserDbModel { get; set; }
     }
 }
