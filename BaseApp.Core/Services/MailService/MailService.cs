@@ -4,7 +4,7 @@ using SendGrid.Helpers.Mail;
 
 namespace BaseApp.Core.Services.MailService
 {
-    internal class MailService
+    internal abstract class MailService
     {
         private readonly string _receiverEmail;
         private readonly string _sendGridApiKey;
@@ -19,13 +19,16 @@ namespace BaseApp.Core.Services.MailService
             _subject = args.Subject;
         }
         
-        protected async Task Send(string template)
+        internal async Task Send()
         {
+            var template = GetEmailTemplate();
             var client = new SendGridClient(_sendGridApiKey);
             var from = new EmailAddress(MailSender, SenderName);
             var to = new EmailAddress(_receiverEmail);
             var msg = MailHelper.CreateSingleEmail(from, to, _subject, "", template);
             await client.SendEmailAsync(msg);
         }
+
+        protected abstract string GetEmailTemplate();
     }
 }

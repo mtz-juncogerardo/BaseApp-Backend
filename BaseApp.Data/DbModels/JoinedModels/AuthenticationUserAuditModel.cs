@@ -1,6 +1,4 @@
-﻿using BaseApp.Data.DbModels;
-
-namespace BaseApp.Data.Models
+﻿namespace BaseApp.Data.DbModels.JoinedModels
 {
     public class AuthenticationUserAuditModel : IDbModel
     {

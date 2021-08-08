@@ -1,8 +1,8 @@
 using System.Text;
 using AspNetCoreRateLimit;
 using BaseApp.Data.DataAccess;
-using BaseApp.Data.Repositories;
 using BaseApp.InjectionServices;
+using BaseApp.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

@@ -6,24 +6,24 @@ namespace BaseApp.Core.Services.MailService
 {
     public static class MailFactory
     {
-        public static async Task SendMailTemplate(MailTemplateEnum templateType, MailArgs args)
+        public static async Task SendMailTemplate(MailTemplateType templateType, MailArgs args)
         {
             switch (templateType)
             {
-                case MailTemplateEnum.ConfirmEmail:
-                    await new ConfirmEmailTemplate(args).SendEmail();
+                case MailTemplateType.ConfirmEmail:
+                    await new ConfirmEmailMailTemplate(args).Send();
                     break;
-                case MailTemplateEnum.EmailChange:
-                    await new EmailChangeTemplate(args).SendEmail();
+                case MailTemplateType.EmailChange:
+                    await new EmailChangeMailTemplate(args).Send();
                     break;
-                case MailTemplateEnum.PasswordRecovery:
-                    await new PasswordRecoverTemplate(args).SendEmail();
+                case MailTemplateType.PasswordRecovery:
+                    await new PasswordRecoverMailTemplate(args).Send();
                     break;
-                case MailTemplateEnum.TestingEmail:
-                    await new TestingEmailTemplate(args).SendEmail();
+                case MailTemplateType.TestingEmail:
+                    await new TestingEmailMailTemplate(args).Send();
                     break;
                 default:
-                    CustomException.Throw("No se espicifico este tipo de template en el switch", 500);
+                    CustomException.Throw("No se encontro un mail template para enviar", 500);
                     break;
             }
         }

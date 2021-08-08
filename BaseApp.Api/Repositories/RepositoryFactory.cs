@@ -1,10 +1,8 @@
 ﻿using System;
 using BaseApp.Core.Helpers;
 using BaseApp.Data.DataAccess;
-using BaseApp.Data.Responses;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace BaseApp.Data.Repositories
+namespace BaseApp.Repositories
 {
     public class RepositoryFactory : IRepositoryFactory
     {
@@ -17,9 +15,9 @@ namespace BaseApp.Data.Repositories
 
         public IRepositoryBehavior Choose(Type repository)
         {
-            if (repository == typeof(UserRepository))
+            if (repository == typeof(AuthenticationUserRepository))
             {
-                return new UserRepository(_context);
+                return new AuthenticationUserRepository(_context);
             }
             CustomException.Throw("El repositorio no existe", 500);
             return null;

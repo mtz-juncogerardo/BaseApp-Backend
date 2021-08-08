@@ -1,6 +1,6 @@
 ﻿namespace BaseApp.Core.Services.MailService
 {
-    public enum MailTemplateEnum
+    public enum MailTemplateType
     {
         ConfirmEmail,
         EmailChange,

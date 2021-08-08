@@ -7,11 +7,11 @@ using BaseApp.Core.Helpers;
 using BaseApp.Core.Services.CommonServices;
 using BaseApp.Core.Services.MailService;
 using BaseApp.Data.DbModels;
-using BaseApp.Data.Models;
-using BaseApp.Data.Repositories;
+using BaseApp.Data.DbModels.JoinedModels;
 using BaseApp.Data.Requests;
 using BaseApp.Data.Responses;
 using BaseApp.InjectionServices;
+using BaseApp.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +24,7 @@ namespace BaseApp.Controllers
     {
         private readonly IAuditService _auditService;
         private readonly IConfigurationService _configuration;
-        private readonly IRepositoryBehavior _userRepository;
+        private readonly IRepositoryBehavior _authenticationUserRepository;
 
         public AuthController(IRepositoryFactory repository,
             IConfigurationService configuration,
@@ -32,18 +32,18 @@ namespace BaseApp.Controllers
         {
             _configuration = configuration;
             _auditService = auditService;
-            _userRepository = repository.Choose(typeof(UserRepository));
+            _authenticationUserRepository = repository.Choose(typeof(AuthenticationUserRepository));
         }
 
         [HttpPost("signup")]
         public async Task<IActionResult> SignUpUser([FromForm] AuthenticationRequest request)
         {
             EmailValidator.ValidateEmail(request.Email);
-            var dbAuthUserAudit = _userRepository.GetByKeyValue("Email", request.Email)
+            var dbAuthUserAudit = _authenticationUserRepository.GetByKeyValue("Email", request.Email)
                 .FirstOrDefault() as AuthenticationUserAuditModel;
             if (dbAuthUserAudit != null && dbAuthUserAudit.AuditDb.CreatedAtDate < DateTime.Now.AddDays(1))
             {
-                _userRepository.Delete(dbAuthUserAudit);
+                _authenticationUserRepository.Delete(dbAuthUserAudit);
                 dbAuthUserAudit = null;
             }
             if (dbAuthUserAudit != null)
@@ -67,7 +67,7 @@ namespace BaseApp.Controllers
                 AuthenticationDbModel = auth,
                 AuditDbModel = auditFields
             };
-            _userRepository.Create(user);
+            _authenticationUserRepository.Create(user);
             var token = JwtService.GenerateTokenWithUserId(_configuration.JwtSecret,
                 DateTime.Now.AddDays(1),
                 user.Id,
@@ -79,7 +79,7 @@ namespace BaseApp.Controllers
                 ReceiverEmail = request.Email,
                 SendGridApiKey = _configuration.SendGridApiKey
             };
-            await MailFactory.SendMailTemplate(MailTemplateEnum.ConfirmEmail, mailArgs);
+            await MailFactory.SendMailTemplate(MailTemplateType.ConfirmEmail, mailArgs);
             return StatusCode(200, new MessageResponse("Para continuar da click en el enlace que te enviamos por correo."));
         }
 
@@ -87,7 +87,7 @@ namespace BaseApp.Controllers
         public IActionResult LoginUser([FromForm] AuthenticationRequest request)
         {
             EmailValidator.ValidateEmail(request.Email);
-            var dbAuthUserAudit = _userRepository.GetByKeyValue("Email", request.Email)
+            var dbAuthUserAudit = _authenticationUserRepository.GetByKeyValue("Email", request.Email)
                 .FirstOrDefault() as AuthenticationUserAuditModel;
             if (dbAuthUserAudit == null)
             {
@@ -112,14 +112,14 @@ namespace BaseApp.Controllers
         public async Task<IActionResult> RecoverUserCredentials([FromForm] AuthenticationRequest request)
         {
             EmailValidator.ValidateEmail(request.Email);
-            var dbModel = _userRepository.GetByKeyValue("Email", request.Email)
+            var dbModel = _authenticationUserRepository.GetByKeyValue("Email", request.Email)
                 .FirstOrDefault() as AuthenticationUserAuditModel;
             if (dbModel == null)
             {
                 return StatusCode(404, "No se encontro ninguna cuenta asociada a ese correo");
             }
             dbModel.AuthenticationDb.VersionId = Guid.NewGuid().ToString();
-            _userRepository.Update(dbModel);
+            _authenticationUserRepository.Update(dbModel);
             var token = JwtService.GenerateTokenWithUserId(_configuration.JwtSecret,
                 DateTime.Now.AddMinutes(5),
                 dbModel.UserDb.Id!,
@@ -131,7 +131,7 @@ namespace BaseApp.Controllers
                 ReceiverEmail = request.Email,
                 SendGridApiKey = _configuration.SendGridApiKey
             };
-            await MailFactory.SendMailTemplate(MailTemplateEnum.PasswordRecovery, mailArgs);
+            await MailFactory.SendMailTemplate(MailTemplateType.PasswordRecovery, mailArgs);
             return StatusCode(200,
                 new MessageResponse("Se envio un correo con las instrucciones para restablecer tu contraseña."));
         }
@@ -141,14 +141,14 @@ namespace BaseApp.Controllers
         public IActionResult ChangePassword([FromForm] AuthenticationRequest request)
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _userRepository.GetById(userId) as AuthenticationUserAuditModel ?? new AuthenticationUserAuditModel();
+            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel ?? new AuthenticationUserAuditModel();
             JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
             var ip = IpService.GetIpAddress(Request);
             dbModel.AuthenticationDb.Salt = PasswordService.GenerateSalt();
             dbModel.AuthenticationDb.Password = PasswordService.GetHashPassword(request.Password,
                 dbModel.AuthenticationDb.Salt);
             dbModel.AuditDb = _auditService.UpdateAuditFields(dbModel.AuditDb, dbModel.AuthenticationDb.Email, ip);
-            _userRepository.Update(dbModel);
+            _authenticationUserRepository.Update(dbModel);
             return StatusCode(200, new MessageResponse("Cambiaste tu contraseña con exitó"));
         }
 
@@ -158,7 +158,7 @@ namespace BaseApp.Controllers
         {
             EmailValidator.ValidateEmail(request.Email);
             var userId = JwtService.GetClaimUserId(User);
-            var dbModelAuth = _userRepository.GetById(userId) as AuthenticationUserAuditModel;
+            var dbModelAuth = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
             if (dbModelAuth?.AuthenticationDb.Email == request.Email)
             {
                 return StatusCode(400, "El correo es identico al anterior");
@@ -176,7 +176,7 @@ namespace BaseApp.Controllers
                 ReceiverEmail = request.Email,
                 SendGridApiKey = _configuration.SendGridApiKey
             };
-            await MailFactory.SendMailTemplate(MailTemplateEnum.EmailChange, mailArgs);
+            await MailFactory.SendMailTemplate(MailTemplateType.EmailChange, mailArgs);
             return StatusCode(200,
                 new MessageResponse("Se envio un enlace al nuevo correo, ingresa a el para completar los cambios"));
         }
@@ -188,7 +188,7 @@ namespace BaseApp.Controllers
             var email = JwtService.GetClaims(User).FirstOrDefault(r => r.Type == "Email")?.Value;
             EmailValidator.ValidateEmail(email ?? string.Empty);
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _userRepository.GetById(userId) as AuthenticationUserAuditModel;
+            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
             if (dbModel == null)
             {
                 return StatusCode(404, "No se encontro el usuario");
@@ -196,7 +196,7 @@ namespace BaseApp.Controllers
             var ip = IpService.GetIpAddress(Request);
             dbModel.AuthenticationDb.Email = email;
             dbModel.AuditDb = _auditService.UpdateAuditFields(dbModel.AuditDb, dbModel.AuthenticationDb.Email, ip);
-            _userRepository.Update(dbModel);
+            _authenticationUserRepository.Update(dbModel);
             return StatusCode(200, new MessageResponse("Cambiaste tu correo con exitó"));
         }
 
@@ -205,7 +205,7 @@ namespace BaseApp.Controllers
         public IActionResult ValidateUserEmail()
         {
             var id = JwtService.GetClaimUserId(User);
-            var dbModel = _userRepository.GetById(id) as AuthenticationUserAuditModel;
+            var dbModel = _authenticationUserRepository.GetById(id) as AuthenticationUserAuditModel;
             if (dbModel == null) return StatusCode(401, "El token expiró");
             JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
             if (!dbModel.AuthenticationDb.EmailValid)
@@ -214,7 +214,7 @@ namespace BaseApp.Controllers
                 dbModel.AuditDb = _auditService.UpdateAuditFields(dbModel.AuditDb, dbModel.AuthenticationDb.Email, ip);
                 dbModel.AuthenticationDb.EmailValid = true;
                 dbModel.AuthenticationDb.VersionId = Guid.NewGuid().ToString();
-                _userRepository.Update(dbModel);
+                _authenticationUserRepository.Update(dbModel);
             }
             var token = JwtService.GenerateTokenWithUserId(_configuration.JwtSecret,
                 DateTime.Now.AddDays(7),

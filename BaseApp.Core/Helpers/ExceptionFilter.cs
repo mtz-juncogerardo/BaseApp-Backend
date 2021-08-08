@@ -23,11 +23,12 @@ namespace BaseApp.Core.Helpers
         private static bool IsValidHttpCode(int code)
         {
             return code.Equals(400) 
-                || code.Equals(401)
-                || code.Equals(404)
-                || code.Equals(405)
-                || code.Equals(500)
-                || code.Equals(200);
+                   || code.Equals(401) 
+                   || code.Equals(403) 
+                   || code.Equals(404) 
+                   || code.Equals(405) 
+                   || code.Equals(429) 
+                   || code.Equals(500);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using BaseApp.Data.DbModels;
-using BaseApp.Data.Models;
+﻿using BaseApp.Data.DbModels.JoinedModels;
 
 namespace BaseApp.Data.Requests
 {
@@ -12,7 +11,7 @@ namespace BaseApp.Data.Requests
         public string State { get; set; }
         public string PostalCode { get; set; }
 
-        public AuthenticationUserAuditModel ConverToDbModel(AuthenticationUserAuditModel authUserAudit)
+        public AuthenticationUserAuditModel ConvertToDbModel(AuthenticationUserAuditModel authUserAudit)
         {
             authUserAudit.UserDb.Name = Name;
             authUserAudit.UserDb.Phone = Phone;

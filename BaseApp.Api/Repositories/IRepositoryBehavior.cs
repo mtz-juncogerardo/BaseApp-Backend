@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using BaseApp.Data.DbModels;
-using BaseApp.Data.Models;
 
-namespace BaseApp.Data.Repositories
+namespace BaseApp.Repositories
 {
     public interface IRepositoryBehavior
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BaseApp.Data.Repositories
+namespace BaseApp.Repositories
 {
     public interface IRepositoryFactory
     {

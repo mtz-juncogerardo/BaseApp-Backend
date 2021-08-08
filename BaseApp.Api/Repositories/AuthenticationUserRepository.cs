@@ -3,14 +3,14 @@ using System.Linq;
 using BaseApp.Core.Helpers;
 using BaseApp.Data.DataAccess;
 using BaseApp.Data.DbModels;
-using BaseApp.Data.Models;
+using BaseApp.Data.DbModels.JoinedModels;
 
-namespace BaseApp.Data.Repositories
+namespace BaseApp.Repositories
 {
-    public class UserRepository : IRepositoryBehavior
+    public class AuthenticationUserRepository : IRepositoryBehavior
     {
         private readonly AuthenticationContext _context;
-        public UserRepository(AuthenticationContext context)
+        public AuthenticationUserRepository(AuthenticationContext context)
         {
             _context = context;
         }

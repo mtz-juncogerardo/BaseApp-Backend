@@ -1,5 +1,5 @@
 ﻿using BaseApp.Data.DbModels;
-using BaseApp.Data.Models;
+using BaseApp.Data.DbModels.JoinedModels;
 
 namespace BaseApp.Data.Responses
 {
