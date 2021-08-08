@@ -154,7 +154,7 @@ namespace BaseApp.Controllers
 
         [Authorize]
         [HttpPost("email")]
-        public async Task<IActionResult> RequestMailChange([FromBody] AuthenticationRequest request)
+        public async Task<IActionResult> RequestMailChange([FromForm] AuthenticationRequest request)
         {
             EmailValidator.ValidateEmail(request.Email);
             var userId = JwtService.GetClaimUserId(User);
@@ -162,6 +162,11 @@ namespace BaseApp.Controllers
             if (dbModelAuth?.AuthenticationDb.Email == request.Email)
             {
                 return StatusCode(400, "El correo es identico al anterior");
+            }
+            var mailExists = _authenticationUserRepository.GetByKeyValue("Email", request.Email).Any();
+            if (mailExists)
+            {
+                return StatusCode(400, "Este correo ya se encuentra registrado");
             }
             var claims = new List<Claim>
             {
@@ -206,7 +211,10 @@ namespace BaseApp.Controllers
         {
             var id = JwtService.GetClaimUserId(User);
             var dbModel = _authenticationUserRepository.GetById(id) as AuthenticationUserAuditModel;
-            if (dbModel == null) return StatusCode(401, "El token expiró");
+            if (dbModel == null)
+            {
+                return StatusCode(401, "El token expiró");
+            }
             JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
             if (!dbModel.AuthenticationDb.EmailValid)
             {

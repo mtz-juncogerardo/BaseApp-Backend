@@ -32,7 +32,11 @@ namespace BaseApp.Controllers
         public IActionResult GetAllUsers()
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel ?? new AuthenticationUserAuditModel();
+            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
+            if (dbModel == null)
+            {
+                return StatusCode(401, "El token expiró");
+            }
             JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
             var dbUsers = _authenticationUserRepository.GetAll() as IEnumerable<AuthenticationUserAuditModel>;
             return StatusCode(200, dbUsers?.Select(r => new UserResponse(r)));
@@ -43,6 +47,10 @@ namespace BaseApp.Controllers
         {
             var userId = JwtService.GetClaimUserId(User);
             var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
+            if (dbModel == null)
+            {
+                return StatusCode(401, "El token expiró");
+            }
             return StatusCode(200, new UserResponse(dbModel));
         }
 

@@ -74,7 +74,11 @@ namespace BaseApp.Repositories
 
         public void Update(IDbModel dbModel)
         {
-            var model = dbModel as AuthenticationUserAuditModel ?? new AuthenticationUserAuditModel();
+            var model = dbModel as AuthenticationUserAuditModel;
+            if (model == null)
+            {
+                return;
+            }
             model.UserDb.AuthenticationDbModel = model.AuthenticationDb;
             model.UserDb.AuditDbModel = model.AuditDb;
             _context.SaveChanges();
