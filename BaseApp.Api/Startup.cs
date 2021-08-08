@@ -19,7 +19,7 @@ namespace BaseApp
     public class Startup
     {
         private readonly IConfiguration _configuration;
-        
+
         private ConfigurationService Configuration { get; }
 
         public Startup(IConfiguration configuration)
@@ -48,7 +48,7 @@ namespace BaseApp
                             options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                         });
         }
-        
+
         private void ConfigureIpRateLimit(IServiceCollection services)
         {
             services.AddMemoryCache();
@@ -57,7 +57,7 @@ namespace BaseApp
             services.AddInMemoryRateLimiting();
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         }
-        
+
         private void AddAuthentication(IServiceCollection services)
         {
             services.AddAuthentication(r =>
@@ -87,9 +87,9 @@ namespace BaseApp
             services.AddSingleton(Configuration);
             services.AddSingleton<IConfigurationService>(Configuration);
             services.AddScoped<IAuditService, AuditFieldsService>();
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRepositoryFactory, RepositoryFactory>();
         }
-        
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

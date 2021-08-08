@@ -2,7 +2,6 @@
 using System.Linq;
 using BaseApp.Core.Helpers;
 using BaseApp.Core.Services.CommonServices;
-using BaseApp.Data.DbModels;
 using BaseApp.Data.Models;
 using BaseApp.Data.Repositories;
 using BaseApp.Data.Requests;
@@ -19,17 +18,13 @@ namespace BaseApp.Controllers
     [TypeFilter(typeof(ExceptionFilter))]
     public class UserController : ControllerBase
     {
-        private readonly IConfigurationService _configuration;
         private readonly IAuditService _auditService;
-        private readonly IUserRepository _userRepository;
+        private readonly IRepositoryBehavior _userRepository;
 
-        public UserController(IConfigurationService configuration,
-            IAuditService auditService,
-            IUserRepository userRepository)
+        public UserController(IAuditService auditService, IRepositoryFactory repository)
         {
-            _configuration = configuration;
             _auditService = auditService;
-            _userRepository = userRepository;
+            _userRepository = repository.Choose(typeof(UserRepository));
         }
         
         [HttpGet("all")]
@@ -37,19 +32,17 @@ namespace BaseApp.Controllers
         public IActionResult GetAllUsers()
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _userRepository.GetById(userId);
+            var dbModel = _userRepository.GetById(userId) as AuthenticationUserAuditModel ?? new AuthenticationUserAuditModel();
             JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
-
-            var dbUsers = _userRepository.All
-                .Select(r => new UserResponse(r));
-            return StatusCode(200, dbUsers);
+            var dbUsers = _userRepository.GetAll() as IEnumerable<AuthenticationUserAuditModel>;
+            return StatusCode(200, dbUsers?.Select(r => new UserResponse(r)));
         }
 
         [HttpGet]
         public IActionResult GetMyUser()
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _userRepository.GetById(userId);
+            var dbModel = _userRepository.GetById(userId) as AuthenticationUserAuditModel;
             return StatusCode(200, new UserResponse(dbModel));
         }
 
@@ -57,7 +50,7 @@ namespace BaseApp.Controllers
         public IActionResult UpdateUser([FromForm] UserRequest request)
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _userRepository.GetById(userId);
+            var dbModel = _userRepository.GetById(userId) as AuthenticationUserAuditModel;
             if (dbModel == null)
             {
                 return StatusCode(401, "El token expiró");

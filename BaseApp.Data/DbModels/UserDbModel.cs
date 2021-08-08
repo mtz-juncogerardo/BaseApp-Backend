@@ -2,7 +2,7 @@
 
 namespace BaseApp.Data.DbModels
 {
-    public class UserDbModel
+    public class UserDbModel : IDbModel
     {
         [Required] public string AuthenticationDbModelId { get; set; }
         [Required] public string AuditDbModelId { get; set; }

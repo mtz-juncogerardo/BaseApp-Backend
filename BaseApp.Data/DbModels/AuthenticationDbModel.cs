@@ -4,7 +4,7 @@ using BaseApp.Data.Roles;
 
 namespace BaseApp.Data.DbModels
 {
-    public class AuthenticationDbModel 
+    public class AuthenticationDbModel : IDbModel
     {
         [Required, MaxLength(100)] public string Salt { get; set; }
         [Required, MaxLength(50)] public string Email { get; set; }

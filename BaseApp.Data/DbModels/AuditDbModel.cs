@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BaseApp.Data.DbModels
 {
-    public class AuditDbModel
+    public class AuditDbModel : IDbModel
     {
         [Required, MaxLength(36)] public string Id { get; set; }
         [Required] public DateTime CreatedAtDate { get; set; }
