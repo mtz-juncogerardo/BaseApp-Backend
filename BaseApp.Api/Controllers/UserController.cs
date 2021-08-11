@@ -28,17 +28,17 @@ namespace BaseApp.Controllers
         }
         
         [HttpGet("all")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, Developer")]
         public IActionResult GetAllUsers()
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
+            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditDbModel;
             if (dbModel == null)
             {
                 return StatusCode(401, "El token expiró");
             }
             JwtService.ValidateJwtVersion(dbModel.AuthenticationDb, User);
-            var dbUsers = _authenticationUserRepository.GetAll() as IEnumerable<AuthenticationUserAuditModel>;
+            var dbUsers = _authenticationUserRepository.GetAll() as IEnumerable<AuthenticationUserAuditDbModel>;
             return StatusCode(200, dbUsers?.Select(r => new UserResponse(r)));
         }
 
@@ -46,7 +46,7 @@ namespace BaseApp.Controllers
         public IActionResult GetMyUser()
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
+            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditDbModel;
             if (dbModel == null)
             {
                 return StatusCode(401, "El token expiró");
@@ -58,22 +58,17 @@ namespace BaseApp.Controllers
         public IActionResult UpdateUser([FromForm] UserRequest request)
         {
             var userId = JwtService.GetClaimUserId(User);
-            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditModel;
+            var dbModel = _authenticationUserRepository.GetById(userId) as AuthenticationUserAuditDbModel;
             if (dbModel == null)
             {
                 return StatusCode(401, "El token expiró");
             }
             var ip = IpService.GetIpAddress(Request);
             var audit = _auditService.UpdateAuditFields(dbModel.AuditDb, dbModel.AuthenticationDb.Email, ip);
-            var authUserAudit = new AuthenticationUserAuditModel
-            {
-                AuditDb = audit,
-                AuthenticationDb = dbModel.AuthenticationDb,
-                UserDb = dbModel.UserDb
-            };
-            var updatedDbModel = request.ConvertToDbModel(authUserAudit);
+            dbModel.AuditDb = audit;
+            var updatedDbModel = request.UpdateDbModelValues(dbModel);
             _authenticationUserRepository.Update(updatedDbModel);
-            return StatusCode(200, new UserResponse(authUserAudit));
+            return StatusCode(200, new UserResponse(updatedDbModel));
         }
 
         [HttpDelete]

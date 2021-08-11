@@ -5,7 +5,7 @@ namespace BaseApp.Data.Responses
 {
     public class UserResponse
     {
-        public UserResponse(AuthenticationUserAuditModel authUserAudit)
+        public UserResponse(AuthenticationUserAuditDbModel authUserAudit)
         {
             Id =authUserAudit.UserDb.Id;
             Name =authUserAudit.UserDb.Name;

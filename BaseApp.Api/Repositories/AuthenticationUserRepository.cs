@@ -15,7 +15,7 @@ namespace BaseApp.Repositories
             _context = context;
         }
 
-        private IEnumerable<AuthenticationUserAuditModel> All
+        private IEnumerable<AuthenticationUserAuditDbModel> AuthenticationUserAudit
         {
             get
             {
@@ -33,7 +33,7 @@ namespace BaseApp.Repositories
                     {
                         AuthenticationUser = au,
                         AuditFields = af
-                    }).Select(aua => new AuthenticationUserAuditModel
+                    }).Select(aua => new AuthenticationUserAuditDbModel
                 {
                     AuditDb = aua.AuditFields,
                     AuthenticationDb = aua.AuthenticationUser.Authentication,
@@ -42,51 +42,56 @@ namespace BaseApp.Repositories
             }
         }
 
-        public IEnumerable<IDbModel> GetAll()
+        public IEnumerable<IAuditDbModel> GetAll()
         {
-            return All;
+            return AuthenticationUserAudit;
         }
 
-        public IDbModel GetById(string id)
+        public IAuditDbModel GetById(string id)
         {
-            return All.FirstOrDefault(r => r.UserDb.Id == id);
+            return AuthenticationUserAudit.FirstOrDefault(r => r.UserDb.Id == id);
         }
 
-        public IEnumerable<IDbModel> GetByKeyValue(string key, string value)
+        public IEnumerable<IAuditDbModel> GetByKeyValue(string key, string value)
         {
-            return All.Where(r => value == (string)r.AuthenticationDb.GetType()
+            return AuthenticationUserAudit.Where(r => value == (string)r.AuthenticationDb.GetType()
                 .GetProperty(key)?
                 .GetValue(r.AuthenticationDb));
         }
 
-        public void Create(IDbModel dbModel)
+        public void Create(IAuditDbModel dbModel)
         {
-            var model = (UserDbModel)dbModel;
-            if (model.AuthenticationDbModel == null || model.AuditDbModel == null)
+            var model = dbModel as AuthenticationUserAuditDbModel;
+            if (model?.AuthenticationDb == null || model.AuditDb == null)
             {
                 CustomException
                     .Throw("No se puede guardar el usuario sin especificar sus parametros de autenticacion ni sus campos de Auditoria",
                         500);
+                return;
             }
-            _context.Users.Add(model);
+            _context.Authentication.Add(model.AuthenticationDb);
+            _context.Audit.Add(model.AuditDb);
+            _context.Users.Add(model.UserDb);
             _context.SaveChanges();
         }
 
-        public void Update(IDbModel dbModel)
+        public void Update(IAuditDbModel dbModel)
         {
-            var model = dbModel as AuthenticationUserAuditModel;
+            var model = dbModel as AuthenticationUserAuditDbModel;
             if (model == null)
             {
                 return;
             }
-            model.UserDb.AuthenticationDbModel = model.AuthenticationDb;
-            model.UserDb.AuditDbModel = model.AuditDb;
             _context.SaveChanges();
         }
 
-        public void Delete(IDbModel dbModel)
+        public void Delete(IAuditDbModel dbModel)
         {
-            var model = dbModel as AuthenticationUserAuditModel ?? new AuthenticationUserAuditModel();
+            var model = dbModel as AuthenticationUserAuditDbModel;
+            if (model == null)
+            {
+                return;
+            }
             _context.Audit.Remove(model.AuditDb);
             _context.Authentication.Remove(model.AuthenticationDb);
             _context.SaveChanges();

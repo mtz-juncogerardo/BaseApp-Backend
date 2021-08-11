@@ -3,15 +3,17 @@ using System;
 using BaseApp.Data.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BaseApp.Data.Migrations
 {
     [DbContext(typeof(AuthenticationContext))]
-    partial class AuthenticationContextModelSnapshot : ModelSnapshot
+    [Migration("20210808174429_3")]
+    partial class _3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,11 +24,6 @@ namespace BaseApp.Data.Migrations
             modelBuilder.Entity("BaseApp.Data.DbModels.ArticleDbModel", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(36)
-                        .HasColumnType("character varying(36)");
-
-                    b.Property<string>("AuditDbModelId")
-                        .IsRequired()
                         .HasMaxLength(36)
                         .HasColumnType("character varying(36)");
 
@@ -49,12 +46,6 @@ namespace BaseApp.Data.Migrations
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AuditDbModelId")
-                        .IsUnique();
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("Article");
                 });
@@ -175,17 +166,6 @@ namespace BaseApp.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("BaseApp.Data.DbModels.ArticleDbModel", b =>
-                {
-                    b.HasOne("BaseApp.Data.DbModels.AuditDbModel", "AuditDbModel")
-                        .WithOne("ArticleDbModel")
-                        .HasForeignKey("BaseApp.Data.DbModels.ArticleDbModel", "AuditDbModelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AuditDbModel");
-                });
-
             modelBuilder.Entity("BaseApp.Data.DbModels.UserDbModel", b =>
                 {
                     b.HasOne("BaseApp.Data.DbModels.AuditDbModel", "AuditDbModel")
@@ -207,8 +187,6 @@ namespace BaseApp.Data.Migrations
 
             modelBuilder.Entity("BaseApp.Data.DbModels.AuditDbModel", b =>
                 {
-                    b.Navigation("ArticleDbModel");
-
                     b.Navigation("UserDbModel");
                 });
 

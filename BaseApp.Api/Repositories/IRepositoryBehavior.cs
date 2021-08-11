@@ -5,15 +5,15 @@ namespace BaseApp.Repositories
 {
     public interface IRepositoryBehavior
     {
-        IEnumerable<IDbModel> GetAll();
-        IDbModel GetById(string id);
+        IEnumerable<IAuditDbModel> GetAll();
+        IAuditDbModel GetById(string id);
 
-        IEnumerable<IDbModel> GetByKeyValue(string key, string value);
+        IEnumerable<IAuditDbModel> GetByKeyValue(string key, string value);
 
-        public void Create(IDbModel model);
+        public void Create(IAuditDbModel model);
 
-        public void Update(IDbModel model);
+        public void Update(IAuditDbModel model);
 
-        public void Delete(IDbModel authUserAudit);
+        public void Delete(IAuditDbModel model);
     }
 }

@@ -11,7 +11,7 @@ namespace BaseApp.Data.Requests
         public string State { get; set; }
         public string PostalCode { get; set; }
 
-        public AuthenticationUserAuditModel ConvertToDbModel(AuthenticationUserAuditModel authUserAudit)
+        public AuthenticationUserAuditDbModel UpdateDbModelValues(AuthenticationUserAuditDbModel authUserAudit)
         {
             authUserAudit.UserDb.Name = Name;
             authUserAudit.UserDb.Phone = Phone;

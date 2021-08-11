@@ -1,8 +1,8 @@
 ﻿namespace BaseApp.Data.Responses
 {
-    public abstract class PageControlResponse
+    public class PageControlResponse
     {
-        protected PageControlResponse(int page, int maxPage, int count, int totalCount)
+        public PageControlResponse(int page, int maxPage, int count, int totalCount)
         {
             Page = page;
             MaxPage = maxPage;

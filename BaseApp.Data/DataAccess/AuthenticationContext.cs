@@ -11,5 +11,7 @@ namespace BaseApp.Data.DataAccess
         public DbSet<UserDbModel> Users { get; set; }
         public DbSet<AuthenticationDbModel> Authentication { get; set; }
         public DbSet<AuditDbModel> Audit { get; set; }
+        
+        public DbSet<ArticleDbModel> Article { get; set; }
     }
 }

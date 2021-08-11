@@ -12,6 +12,8 @@ namespace BaseApp.Data.DbModels
         [MaxLength(15)] public string LastTouchedByIp { get; set; }
         public DateTime UpdatedAtDate { get; set; }
 
+        //FK Tables
         public UserDbModel UserDbModel { get; set; }
+        public ArticleDbModel ArticleDbModel { get; set; }
     }
 }

@@ -19,6 +19,10 @@ namespace BaseApp.Repositories
             {
                 return new AuthenticationUserRepository(_context);
             }
+            if (repository == typeof(ArticleRepository))
+            {
+                return new ArticleRepository(_context);
+            }
             CustomException.Throw("El repositorio no existe", 500);
             return null;
         }
